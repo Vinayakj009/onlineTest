@@ -3,6 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -60,14 +63,36 @@ func printFetch(queue *jsonQueue) {
 	}
 }
 
+var StorageQueue = new(jsonQueue)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path[1:] == "fetch" {
+		clear, data := StorageQueue.fetch()
+		fmt.Fprintf(w, `{"success":%t,"data":"%s"}`, clear, data)
+	} else if r.URL.Path[1:] == "insert" {
+		data := r.Form.Get("data")
+		if isJSON(data) == false {
+			fmt.Print("Tried to insert ")
+			fmt.Println(r.Form)
+			fmt.Fprintf(w, `{"success":%t}`, false)
+			return
+		}
+		StorageQueue.insert(data)
+		fmt.Fprintf(w, `{"success":%t}`, true)
+	} else if r.URL.Path[1:] == "setTimeOut" {
+		timeOutString := r.Form.Get("timeOut")
+		timeOut, err := strconv.Atoi(timeOutString)
+		if err != nil {
+			fmt.Fprintf(w, `{"success":%t}`, false)
+			return
+		}
+		StorageQueue.setWaitTime(timeOut)
+		fmt.Fprintf(w, `{"success":%t}`, true)
+	}
+
+}
+
 func main() {
-	temp := new(jsonQueue)
-	temp.insert("{\"test\":\"best\"}")
-	temp.insert("data1")
-	temp.setWaitTime(2000)
-	printFetch(temp)
-	printFetch(temp)
-	go printFetch(temp)
-	temp.insert("{\"test2\":\"best\"}")
-	time.Sleep(time.Second * 3)
+	http.HandleFunc("/", handler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
