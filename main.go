@@ -8,12 +8,12 @@ import (
 type JSONQueue interface {
 	insert(string) int
 	fetch() (bool, string)
-	setWaitTime(time.Duration)
+	setWaitTime(int)
 }
 
 type jsonQueue struct {
 	queue    []string
-	waitTime time.Duration
+	waitTime int
 }
 
 func (queue *jsonQueue) insert(data string) int {
@@ -23,7 +23,8 @@ func (queue *jsonQueue) insert(data string) int {
 
 func (queue *jsonQueue) fetch() (bool, string) {
 	start := time.Now()
-	for (time.Since(start) < queue.waitTime) || (len(queue.queue) == 0) {
+	waitTime := time.Millisecond * time.Duration(queue.waitTime)
+	for (time.Since(start) < waitTime) && (len(queue.queue) == 0) {
 
 	}
 	if len(queue.queue) == 0 {
@@ -35,7 +36,7 @@ func (queue *jsonQueue) fetch() (bool, string) {
 	return true, temp
 }
 
-func (queue *jsonQueue) setWaitTime(data time.Duration) {
+func (queue *jsonQueue) setWaitTime(data int) {
 	queue.waitTime = data
 }
 
@@ -46,7 +47,7 @@ func main() {
 	fmt.Println(elapsed)
 	temp.insert("data1")
 	temp.insert("data2")
-	temp.setWaitTime(time.Second * 4)
+	temp.setWaitTime(2000)
 	clear, temp1 := temp.fetch()
 	if clear {
 		fmt.Print("This is the first data ")
