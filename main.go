@@ -66,14 +66,16 @@ func printFetch(queue *jsonQueue) {
 var StorageQueue = new(jsonQueue)
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
 	if r.URL.Path[1:] == "fetch" {
 		clear, data := StorageQueue.fetch()
-		fmt.Fprintf(w, `{"success":%t,"data":"%s"}`, clear, data)
+		if data == "" {
+			data = "\"\""
+		}
+		fmt.Fprintf(w, `{"success":%t,"data":%s}`, clear, data)
 	} else if r.URL.Path[1:] == "insert" {
 		data := r.Form.Get("data")
 		if isJSON(data) == false {
-			fmt.Print("Tried to insert ")
-			fmt.Println(r.Form)
 			fmt.Fprintf(w, `{"success":%t}`, false)
 			return
 		}
