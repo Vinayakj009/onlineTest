@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -16,7 +17,16 @@ type jsonQueue struct {
 	waitTime int
 }
 
+func isJSON(s string) bool {
+	var js map[string]interface{}
+	return json.Unmarshal([]byte(s), &js) == nil
+
+}
+
 func (queue *jsonQueue) insert(data string) int {
+	if !isJSON(data) {
+		return len(queue.queue)
+	}
 	queue.queue = append(queue.queue, data)
 	return len(queue.queue)
 }
@@ -52,12 +62,12 @@ func printFetch(queue *jsonQueue) {
 
 func main() {
 	temp := new(jsonQueue)
+	temp.insert("{\"test\":\"best\"}")
 	temp.insert("data1")
-	temp.insert("data2")
 	temp.setWaitTime(2000)
 	printFetch(temp)
 	printFetch(temp)
 	go printFetch(temp)
-	temp.insert("data3")
+	temp.insert("{\"test2\":\"best\"}")
 	time.Sleep(time.Second * 3)
 }
