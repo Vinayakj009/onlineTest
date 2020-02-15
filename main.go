@@ -57,5 +57,7 @@ func main() {
 	temp.setWaitTime(2000)
 	printFetch(temp)
 	printFetch(temp)
-	printFetch(temp)
+	go printFetch(temp)
+	temp.insert("data3")
+	time.Sleep(time.Second * 3)
 }
