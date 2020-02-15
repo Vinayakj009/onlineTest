@@ -65,33 +65,32 @@ func printFetch(queue *jsonQueue) {
 
 var StorageQueue = new(jsonQueue)
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	r.ParseForm()
-	if r.URL.Path[1:] == "fetch" {
+func handler(responseWriter http.ResponseWriter, request *http.Request) {
+	request.ParseForm()
+	if request.URL.Path[1:] == "fetch" {
 		clear, data := StorageQueue.fetch()
 		if data == "" {
 			data = "\"\""
 		}
-		fmt.Fprintf(w, `{"success":%t,"data":%s}`, clear, data)
-	} else if r.URL.Path[1:] == "insert" {
-		data := r.Form.Get("data")
+		fmt.Fprintf(responseWriter, `{"success":%t,"data":%s}`, clear, data)
+	} else if request.URL.Path[1:] == "insert" {
+		data := request.Form.Get("data")
 		if isJSON(data) == false {
-			fmt.Fprintf(w, `{"success":%t}`, false)
+			fmt.Fprintf(responseWriter, `{"success":%t}`, false)
 			return
 		}
 		StorageQueue.insert(data)
-		fmt.Fprintf(w, `{"success":%t}`, true)
-	} else if r.URL.Path[1:] == "setTimeOut" {
-		timeOutString := r.Form.Get("timeOut")
+		fmt.Fprintf(responseWriter, `{"success":%t}`, true)
+	} else if request.URL.Path[1:] == "setTimeOut" {
+		timeOutString := request.Form.Get("timeOut")
 		timeOut, err := strconv.Atoi(timeOutString)
 		if err != nil {
-			fmt.Fprintf(w, `{"success":%t}`, false)
+			fmt.Fprintf(responseWriter, `{"success":%t}`, false)
 			return
 		}
 		StorageQueue.setWaitTime(timeOut)
-		fmt.Fprintf(w, `{"success":%t}`, true)
+		fmt.Fprintf(responseWriter, `{"success":%t}`, true)
 	}
-
 }
 
 func main() {
