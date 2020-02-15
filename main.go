@@ -1,16 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type JSONQueue interface {
 	insert(string) int
 	fetch() (bool, string)
-	setWaitTime(int)
+	setWaitTime(time.Duration)
 }
 
 type jsonQueue struct {
 	queue    []string
-	waitTime int
+	waitTime time.Duration
 }
 
 func (queue *jsonQueue) insert(data string) int {
@@ -19,6 +22,10 @@ func (queue *jsonQueue) insert(data string) int {
 }
 
 func (queue *jsonQueue) fetch() (bool, string) {
+	start := time.Now()
+	for (time.Since(start) < queue.waitTime) || (len(queue.queue) == 0) {
+
+	}
 	if len(queue.queue) == 0 {
 		return false, ""
 	}
@@ -28,14 +35,18 @@ func (queue *jsonQueue) fetch() (bool, string) {
 	return true, temp
 }
 
-func (queue *jsonQueue) setWaitTime(data int) {
+func (queue *jsonQueue) setWaitTime(data time.Duration) {
 	queue.waitTime = data
 }
 
 func main() {
 	temp := new(jsonQueue)
+	start := time.Now()
+	elapsed := time.Since(start)
+	fmt.Println(elapsed)
 	temp.insert("data1")
 	temp.insert("data2")
+	temp.setWaitTime(time.Second * 4)
 	clear, temp1 := temp.fetch()
 	if clear {
 		fmt.Print("This is the first data ")
